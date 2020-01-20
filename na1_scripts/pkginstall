@@ -1,0 +1,60 @@
+#!/bin/sh
+#==============================HEADER================================|
+#AUTOR
+# Jefferson 'Slackjeff' Rocha <root@slackjeff.com.br>
+#
+#VERSÃO
+# 0.1
+#
+#DESCRIÇÃO
+#pkginstall - Instala pacotes gerado com o createpkg e gera uma lista
+#             de rastreamento em /var/log/installed/PKG.track
+#====================================================================|
+
+set -e
+
+#======================== CONFIGURAÇÕES
+INSTALLED_PKG="/var/log/installed/"
+
+#======================== TESTES
+[ ! -d $INSTALLED_PKG ] && mkdir $INSTALLED_PKG
+
+
+#======================== FUNÇÕES
+INSTALL()
+{
+    # Nome do pacote completo com extensão
+    local pkg="$1"
+
+    # Nome do pacote sem extensão .tar.xz
+    local pkg_only_name="${pkg//.tar.xz/}"
+
+    # Informação para o usuário.
+    echo "========> Iniciando instalação do pacote ${pkg}"
+
+    # Criando arquivo .track e enviando nome do pacote como comentário.
+    echo "#PACOTE: ${pkg_only_name}" > "${INSTALLED_PKG}/${pkg_only_name}.track"
+    echo
+
+    # Fazendo extração do pacote e enviando a lista do que está sendo instalado
+    # para o arquivo .track
+    tar xvf ${pkg} -C / >> "${INSTALLED_PKG}/${pkg_only_name}.track"
+
+    echo "Removendo caracteres desnecessários do arquivo .track"
+    # Removendo alguns caracteres não importantes! e que podem resultar em falhas.
+    sed -i 's/\.\//\//g; s/^\/$//; /^$/d' "${INSTALLED_PKG}/${pkg_only_name}.track" 2>/dev/null
+
+    echo "Pacote: $pkg foi instalado com sucesso."
+    return 0
+}
+
+#======================== INICIO
+case $1 in
+   -i|--install|install)
+      shift # Rebaixando parâmetro.
+      # Se o arquivo existir chem a função INSTALL com o nome do pacote.
+      [ -e "$1" ] && INSTALL "$1"
+   ;;
+
+   *) echo "Opções disponiveis: -i|--install|install" ;;
+esac

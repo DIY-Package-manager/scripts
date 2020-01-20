@@ -1,0 +1,44 @@
+#!/bin/sh
+#=========================HEADER===============================|
+#AUTOR:
+# Jefferson Rocha <root@slackjeff.com.br>
+#
+#VERSÃO:
+# 0.1
+#
+#DESCRIÇÃO:
+#createpkg - cria pacotes compactador com tar e comprimido
+#            com o utilitário xz.
+#==============================================================|
+# Erros? pare.
+set -e
+
+#==========================| FUNÇÕES
+CREATE()
+{
+   # Recebendo o nome do pacote passado para a função.
+   local PKG="$1"
+
+   # Empacotando todo o diretório e gerando o pacote
+   # um diretório acima.
+   tar -cvJf ../${PKG} .
+   echo
+   echo "O pacote ${PKG} foi gerado com sucesso em: ../${PKG}."
+   return 0
+}
+
+#==========================| INICIO
+case $1 in
+   -c|--create|create)
+      shift # Rebaixando um parâmetro posicional.
+
+      # O usuário passou o nome do pacote? exemplo dialog-teste.tar.xz
+      if [ -z "$1" ]; then
+         echo "Você deve especificar o nome do pacote."
+         exit 1
+      fi
+
+      # Chamando a função CREATE e passando como parâmetro o nome do pacote.
+      CREATE "$1"
+   ;;
+esac
